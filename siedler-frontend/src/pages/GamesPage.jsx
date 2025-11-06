@@ -1,0 +1,54 @@
+import { useEffect, useState } from "react";
+import { listGames, createGame } from "../api/gamesApi";
+import GameTable from "../components/GameTable";
+import GameFilter from "../components/GameFilter";
+
+export default function GamesPage() {
+  const [games, setGames] = useState([]);
+  const [filter, setFilter] = useState("notStarted");
+  const [loading, setLoading] = useState(true);
+
+  const fetchGames = async () => {
+    try {
+      setLoading(true);
+      const res = await listGames();
+      setGames(res.data);
+    } catch (err) {
+      console.error("Failed to load games:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGames();
+  }, []);
+
+  useEffect(() => {
+    if (games.length > 0) {
+      console.log("Now have games:", games);
+    }
+  }, [games]);
+;
+
+  const handleCreateGame = async () => {
+    await createGame();
+    fetchGames();
+  };
+
+  const filtered = games.filter(g => {
+    if (filter === "notStarted") return g.state === "WAITING_FOR_PLAYERS";
+    if (filter === "ongoing") return g.state === "IN_PROGRESS";
+    if (filter === "past") return g.state === "FINISHED";
+    return true;
+  });
+
+  return (
+    <div>
+      <h2>Available Games</h2>
+      <GameFilter filter={filter} setFilter={setFilter} />
+      <button onClick={handleCreateGame}>Create New Game</button>
+      <GameTable games={filtered}/>
+    </div>
+  );
+}
