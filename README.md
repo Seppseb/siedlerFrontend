@@ -1,1 +1,2 @@
 # siedlerFrontend
+npm run dev
