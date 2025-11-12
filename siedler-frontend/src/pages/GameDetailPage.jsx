@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
 import { getGame, joinGame } from "../api/gamesApi";
 import { useGameWebSocket } from "../hooks/useGameWebSocket";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function GameDetailPage() {
   const { gameId } = useParams();
@@ -12,8 +13,9 @@ export default function GameDetailPage() {
   const [playerId, setPlayerId] = useState(null);
   const [isOwner, setisOwner] = useState(false);
 
+  const navigate = useNavigate();
 
-//get playerid from cookie
+// TODO get playerid from cookie
 // update playerid stuff
   const handleWebSocketMessage = useCallback((event) => {
     if (event.game) {
@@ -48,7 +50,9 @@ export default function GameDetailPage() {
   };
 
   const handleStartGame = async () => {
-    
+    if (isOwner) {
+      navigate(`/games/${gameId}/board`);
+    }
   };
 
   useEffect(() => {
