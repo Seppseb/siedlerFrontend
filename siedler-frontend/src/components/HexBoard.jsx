@@ -7,12 +7,13 @@ export default function HexBoard() {
 
   return (
     <div className="relative">
+    <div className="hidden bg-yellow-500 bg-green-500 bg-red-500 bg-blue-500 bg-orange-500"></div>
       {rowConfig.map((cols, rowIndex) => (
         <div
           key={rowIndex}
           className="flex justify-center"
           style={{
-            marginTop: rowIndex === 0 ? 0 : "-15px", // overlap rows vertically
+            marginTop: rowIndex === 0 ? 0 : "-12px", // overlap rows vertically
             marginLeft: `${(5 - cols) * 1}px`, // offset to center hex shape
           }}
         >

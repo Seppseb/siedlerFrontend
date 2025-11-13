@@ -1,8 +1,9 @@
 export default function HexTile({ color, label }) {
   return (
     <div
-      className={`${color} clip-hexagon border border-emerald-900 flex items-center justify-center text-4xl font-bold text-emerald-950`}
+      className={`bg-yellow-500 clip-hexagon border border-emerald-900 flex items-center justify-center text-4xl font-bold text-emerald-950`}
       style={{
+        backgroundColor: "#f59e0b",
         width: "6rem",
         height: "6rem",
         display: "inline-block",

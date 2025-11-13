@@ -1,13 +1,64 @@
-import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { useGameWebSocket } from "../hooks/useGameWebSocket";
+import { useNavigate } from "react-router-dom";
 import PlayerPanel from "../components/PlayerPanel";
 import ShopBar from "../components/ShopBar";
 import HexBoard from "../components/HexBoard";
+import { getGame } from "../api/gamesApi";
 
 export default function GameBoardPage() {
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [startDrag, setStartDrag] = useState({ x: 0, y: 0 });
+
+  const { gameId } = useParams();
+  const [game, setGame] = useState(null);
+  const [name, setName] = useState("");
+  const [players, setPlayers] = useState("");
+  const [playerNumber, setPlayerNumber] = useState(0);
+  const [playerId, setPlayerId] = useState(null);
+  const [isOwner, setisOwner] = useState(false);
+
+  console.log("Game:", game);
+  console.log("Player ID:", playerId);
+
+  const navigate = useNavigate();
+
+  // TODO get playerid from cookie
+  // update playerid stuff
+    const handleWebSocketMessage = useCallback((event) => {
+      if (event.game) {
+        setGame(event.game);
+      }
+    }, []);
+  
+    useGameWebSocket(gameId, handleWebSocketMessage);
+  
+    const fetchGame = async () => {
+      const res = await getGame(gameId);
+      setGame(res.data);
+    };
+  
+    useEffect(() => {
+      if (game) parsePlayers();
+    }, [game]);
+  
+    function parsePlayers() {
+      if (!game || !game.players) return;
+      const names = Object.values(game.players).map((p) => p.name);
+      setPlayerNumber(names.length);
+    }
+  
+    useEffect(() => {
+      fetchGame();
+    }, [gameId]);
+  
+    useEffect(() => {
+      console.log(playerId);
+      setisOwner(playerId && game && game.ownerId && playerId === game.ownerId);
+    }, [playerId, game]);
 
   // center on load
   useEffect(() => {
