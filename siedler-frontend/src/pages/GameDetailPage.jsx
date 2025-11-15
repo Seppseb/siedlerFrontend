@@ -10,13 +10,16 @@ export default function GameDetailPage() {
   const [name, setName] = useState("");
   const [players, setPlayers] = useState("");
   const [playerNumber, setPlayerNumber] = useState(0);
-  const [playerId, setPlayerId] = useState(null);
+  const [playerId, setPlayerId] = useState(getCookie("userId"));
   const [isOwner, setisOwner] = useState(false);
 
   const navigate = useNavigate();
+  
+  function getCookie(key) {
+    var b = document.cookie.match("(^|;)\\s*" + key + "\\s*=\\s*([^;]+)");
+    return b ? b.pop() : "";
+  }
 
-// TODO get playerid from cookie
-// update playerid stuff
   const handleWebSocketMessage = useCallback((event) => {
     if (event.game) {
       setGame(event.game);

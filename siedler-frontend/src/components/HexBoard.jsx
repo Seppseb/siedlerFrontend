@@ -1,9 +1,9 @@
 import HexTile from "./HexTile";
 
-export default function HexBoard() {
+export default function HexBoard({ board }) {
   // Define the shape: number of hexes in each row
   const rowConfig = [3, 4, 5, 4, 3];
-  const colors = ["bg-yellow-500", "bg-green-500", "bg-red-500", "bg-blue-500", "bg-orange-500"];
+  console.log(board)
 
   return (
     <div className="relative">
@@ -20,8 +20,8 @@ export default function HexBoard() {
           {Array.from({ length: cols }).map((_, colIndex) => (
             <HexTile
               key={`${rowIndex}-${colIndex}`}
-              color={colors[Math.floor(Math.random() * colors.length)]}
-              label={`${rowIndex},${colIndex}`}
+              type={ board && board.tiles ? board.tiles[rowIndex][colIndex].type : "water" }
+              number={ board && board.tiles ? board.tiles[rowIndex][colIndex].number : "0" }
             />
           ))}
         </div>

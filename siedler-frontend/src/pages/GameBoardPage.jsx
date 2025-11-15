@@ -18,7 +18,7 @@ export default function GameBoardPage() {
   const [name, setName] = useState("");
   const [players, setPlayers] = useState("");
   const [playerNumber, setPlayerNumber] = useState(0);
-  const [playerId, setPlayerId] = useState(null);
+  const [playerId, setPlayerId] = useState(getCookie("userId"));
   const [isOwner, setisOwner] = useState(false);
 
   console.log("Game:", game);
@@ -26,8 +26,11 @@ export default function GameBoardPage() {
 
   const navigate = useNavigate();
 
-  // TODO get playerid from cookie
-  // update playerid stuff
+  function getCookie(key) {
+    var b = document.cookie.match("(^|;)\\s*" + key + "\\s*=\\s*([^;]+)");
+    return b ? b.pop() : "";
+  }
+
     const handleWebSocketMessage = useCallback((event) => {
       if (event.game) {
         setGame(event.game);
@@ -112,7 +115,9 @@ export default function GameBoardPage() {
               willChange: "transform",
             }}
           >
-            <HexBoard />
+            <HexBoard 
+              board ={ game && game.board ? game.board : null }
+            />
           </div>
 
           <div className="pointer-events-none absolute inset-0 border-4 border-emerald-950"></div>
