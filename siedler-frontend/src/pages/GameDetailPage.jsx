@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
-import { getGame, joinGame } from "../api/gamesApi";
+import { getGame, joinGame, startGame } from "../api/gamesApi";
 import { useGameWebSocket } from "../hooks/useGameWebSocket";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -23,6 +23,9 @@ export default function GameDetailPage() {
   const handleWebSocketMessage = useCallback((event) => {
     if (event.game) {
       setGame(event.game);
+    }
+    if (event.type === 'STARTED_GAME') {
+      handleGameStart();
     }
   }, []);
 
@@ -48,14 +51,18 @@ export default function GameDetailPage() {
     if (!name || name.length < 1) return;
     const res = await joinGame(gameId, name);
     console.log(res);
-    if (res && res.data && res.data.userId);
-    setPlayerId(res.data.userId);
+    if (res && res.data && res.data.userId)
+      setPlayerId(res.data.userId);
   };
 
   const handleStartGame = async () => {
     if (isOwner) {
-      navigate(`/games/${gameId}/board`);
+      const res = await startGame(gameId, playerId);
     }
+  };
+
+  const handleGameStart = async () => {
+    navigate(`/games/${gameId}/board`);
   };
 
   useEffect(() => {

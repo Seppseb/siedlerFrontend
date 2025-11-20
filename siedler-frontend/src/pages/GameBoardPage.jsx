@@ -5,7 +5,9 @@ import { useNavigate } from "react-router-dom";
 import PlayerPanel from "../components/PlayerPanel";
 import ShopBar from "../components/ShopBar";
 import HexBoard from "../components/HexBoard";
-import { getGame } from "../api/gamesApi";
+import { getGame, sendReady } from "../api/gamesApi";
+import DiceRollPopup from "../components/DiceRollPopup"; 
+import { AnimatePresence } from "framer-motion";
 
 export default function GameBoardPage() {
   const [scale, setScale] = useState(1);
@@ -20,6 +22,10 @@ export default function GameBoardPage() {
   const [playerNumber, setPlayerNumber] = useState(0);
   const [playerId, setPlayerId] = useState(getCookie("userId"));
   const [isOwner, setisOwner] = useState(false);
+  
+  
+  const [showDicePopup, setShowDicePopup] = useState(false);
+  const [diceValues, setDiceValues] = useState([0, 0]); // To hold the values from the server
 
   console.log("Game:", game);
   console.log("Player ID:", playerId);
@@ -35,7 +41,20 @@ export default function GameBoardPage() {
       if (event.game) {
         setGame(event.game);
       }
-    }, []);
+      // Check if it's a 'roll dice' message for the current player
+      if (event.type === 'INITIAL_ROLL' && event.playerId === playerId) {
+        // Assume the dice values are in the event payload
+        if (event.message) {
+          const dice1 = event.message[0];
+          const dice2 = event.message[1];
+          console.log(event.message);
+          console.log(dice1);
+          console.log(dice2);
+          setDiceValues([dice1, dice2]);
+          setShowDicePopup(true); // <--- Function call to open the popup
+        }
+      }
+    }, [playerId]);
   
     useGameWebSocket(gameId, handleWebSocketMessage);
   
@@ -66,6 +85,7 @@ export default function GameBoardPage() {
   // center on load
   useEffect(() => {
     setOffset({ x: 0, y: 0 });
+    sendReady(gameId);
   }, []);
 
   const handleWheel = (e) => {
@@ -90,9 +110,21 @@ export default function GameBoardPage() {
   const handleMouseUp = () => {
     setIsDragging(false);
   };
+  
+  // *** NEW CONFIRMATION HANDLER (You need to implement the actual server call) ***
+  const handleRollConfirm = (dice1, dice2) => {
+    // In a real app, you would send a message to the server here:
+    console.log(`Sending roll confirmation to server: [${dice1}, ${dice2}]`);
+    // Example: sendWebSocketMessage({ type: 'DICE_ROLLED', dice1, dice2, gameId });
+  };
+  
+  const handlePopupClose = () => {
+    setShowDicePopup(false);
+  };
 
   return (
     <div className="flex flex-col h-screen w-screen bg-emerald-900 text-white">
+      {/* ... existing layout ... */}
       <div className="flex flex-1 overflow-hidden">
         <div className="w-1/5 bg-emerald-800 border-r border-emerald-700 flex flex-col justify-center p-4">
           <PlayerPanel side="left" />
@@ -129,6 +161,17 @@ export default function GameBoardPage() {
       <div className="h-32 bg-emerald-950 border-t border-emerald-800">
         <ShopBar />
       </div>
+
+      {/* *** NEW POPUP INTEGRATION *** */}
+      <AnimatePresence>
+        {showDicePopup && (
+          <DiceRollPopup
+            diceValues={diceValues}
+            onRollConfirm={handleRollConfirm}
+            onClose={handlePopupClose}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
