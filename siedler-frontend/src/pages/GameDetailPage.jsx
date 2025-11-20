@@ -50,7 +50,6 @@ export default function GameDetailPage() {
   const handleJoin = async () => {
     if (!name || name.length < 1) return;
     const res = await joinGame(gameId, name);
-    console.log(res);
     if (res && res.data && res.data.userId)
       setPlayerId(res.data.userId);
   };
@@ -65,12 +64,17 @@ export default function GameDetailPage() {
     navigate(`/games/${gameId}/board`);
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      handleJoin();
+    }
+  }
+
   useEffect(() => {
     fetchGame();
   }, [gameId]);
 
   useEffect(() => {
-    console.log(playerId);
     setisOwner(playerId && game && game.ownerId && playerId === game.ownerId);
   }, [playerId, game]);
 
@@ -89,6 +93,7 @@ export default function GameDetailPage() {
         placeholder="Your name"
         value={name}
         onChange={(e) => setName(e.target.value)}
+        onKeyDown={handleKeyDown}
       />
       <button onClick={handleJoin}>Join Game</button>
 

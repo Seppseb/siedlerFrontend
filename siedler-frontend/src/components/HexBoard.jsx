@@ -3,7 +3,6 @@ import HexTile from "./HexTile";
 export default function HexBoard({ board }) {
   // Define the shape: number of hexes in each row
   const rowConfig = [3, 4, 5, 4, 3];
-  console.log(board)
 
   return (
     <div className="relative">

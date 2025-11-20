@@ -8,7 +8,7 @@ const getDiceFace = (value) => {
   return faces[value] || '?';
 };
 
-const Dice = ({ value, isRolling }) => (
+const Dice = ({ value, isRolling, hasRolled }) => (
     <motion.div
       className={`dice-face ${isRolling ? 'rolling' : ''} bg-white text-black text-[7rem] font-bold flex items-center justify-center rounded-lg shadow-xl`}
       style={{ width: '100px', height: '100px', margin: '0 15px' }} 
@@ -16,11 +16,11 @@ const Dice = ({ value, isRolling }) => (
       animate={isRolling ? { rotate: [0, 360, 0, -360, 0] } : { rotate: 0 }}
       transition={isRolling ? { duration: 1, repeat: Infinity, ease: "linear" } : { duration: 0 }}
     >
-      {isRolling ? '❓' : getDiceFace(value)}
+      {!hasRolled ? '❓' : getDiceFace(value)}
     </motion.div>
   );
 
-export default function DiceRollPopup({ diceValues, onRollConfirm, onClose }) {
+export default function DiceRollPopup({ diceValues, onClose }) {
   const [isRolling, setIsRolling] = useState(false);
   const [hasRolled, setHasRolled] = useState(false);
 
@@ -34,7 +34,6 @@ export default function DiceRollPopup({ diceValues, onRollConfirm, onClose }) {
     setTimeout(() => {
       setIsRolling(false);
       setHasRolled(true);
-      onRollConfirm(dice1Value, dice2Value);
     }, 1000);
   };
 
@@ -65,32 +64,36 @@ export default function DiceRollPopup({ diceValues, onRollConfirm, onClose }) {
         <h2 className="text-3xl font-bold mb-6">Your Turn to Roll!</h2>
         
         <div className="flex justify-center items-center mb-6">
-          <Dice value={dice1Value} isRolling={isRolling} />
-          <Dice value={dice2Value} isRolling={isRolling} />
+          <Dice value={dice1Value} isRolling={isRolling} hasRolled={hasRolled} />
+          <Dice value={dice2Value} isRolling={isRolling} hasRolled={hasRolled} />
         </div>
 
         <p className="mb-6 text-lg">
-          {hasRolled ? `You rolled a total of: ${dice1Value + dice2Value}` : "Press the button to roll the dice."}
+          {hasRolled ? `You rolled a total of: ${Number(dice1Value) + Number(dice2Value)}` : "Press the button to roll the dice."}
         </p>
 
-        <button
-          onClick={handleRollDice}
-          disabled={hasRolled || isRolling}
-          className={`w-full py-3 rounded-lg font-semibold transition-colors ${
-            hasRolled || isRolling
-              ? 'bg-gray-500 cursor-not-allowed'
-              : 'bg-yellow-500 hover:bg-yellow-600 text-black'
-          }`}
-        >
-          {isRolling ? 'Rolling...' : hasRolled ? 'Rolled!' : 'Roll Dice'}
-        </button>
+
+        {!hasRolled && (
+          <button
+            onClick={handleRollDice}
+            disabled={isRolling}
+            className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+              isRolling
+                ? 'bg-gray-500 cursor-not-allowed'
+                : 'bg-yellow-500 hover:bg-yellow-600 text-black'
+            }`}
+          >
+            {isRolling ? 'Rolling...' : 'Roll Dice'}
+          </button>
+        )}
+
 
         {hasRolled && (
           <button
             onClick={onClose}
             className="mt-4 text-sm text-gray-300 hover:text-white"
           >
-            Close
+            Confirm
           </button>
         )}
       </motion.div>

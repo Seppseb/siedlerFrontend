@@ -27,8 +27,37 @@ export default function GameBoardPage() {
   const [showDicePopup, setShowDicePopup] = useState(false);
   const [diceValues, setDiceValues] = useState([0, 0]); // To hold the values from the server
 
-  console.log("Game:", game);
-  console.log("Player ID:", playerId);
+
+  //TODO handle show player order, make player page dynamic
+
+  const handleWebSocketMessage = useCallback((event) => {
+    if (event.game) {
+      setGame(event.game);
+    }
+    // Check if it's a 'roll dice' message for the current player
+    if (event.type === 'INITIAL_ROLL' && event.playerId === playerId) {
+      // Assume the dice values are in the event payload
+      if (event.message) {
+        const dice1 = event.message[0];
+        const dice2 = event.message[1];
+        setDiceValues([dice1, dice2]);
+        setShowDicePopup(true); // <--- Function call to open the popup
+      }
+    }
+    if (event.type === 'INITIAL_PLACE' && event.playerId === playerId) {
+      //TODO place road
+    }
+  }, [playerId]);
+
+  const { isConnected } = useGameWebSocket(gameId, handleWebSocketMessage);
+
+
+  useEffect(() => {
+    if (isConnected) {
+      console.log("WebSocket connected — sending READY");
+      sendReady(gameId);
+    }
+  }, [isConnected, gameId]);
 
   const navigate = useNavigate();
 
@@ -37,26 +66,7 @@ export default function GameBoardPage() {
     return b ? b.pop() : "";
   }
 
-    const handleWebSocketMessage = useCallback((event) => {
-      if (event.game) {
-        setGame(event.game);
-      }
-      // Check if it's a 'roll dice' message for the current player
-      if (event.type === 'INITIAL_ROLL' && event.playerId === playerId) {
-        // Assume the dice values are in the event payload
-        if (event.message) {
-          const dice1 = event.message[0];
-          const dice2 = event.message[1];
-          console.log(event.message);
-          console.log(dice1);
-          console.log(dice2);
-          setDiceValues([dice1, dice2]);
-          setShowDicePopup(true); // <--- Function call to open the popup
-        }
-      }
-    }, [playerId]);
-  
-    useGameWebSocket(gameId, handleWebSocketMessage);
+    
   
     const fetchGame = async () => {
       const res = await getGame(gameId);
@@ -78,14 +88,12 @@ export default function GameBoardPage() {
     }, [gameId]);
   
     useEffect(() => {
-      console.log(playerId);
       setisOwner(playerId && game && game.ownerId && playerId === game.ownerId);
     }, [playerId, game]);
 
   // center on load
   useEffect(() => {
     setOffset({ x: 0, y: 0 });
-    sendReady(gameId);
   }, []);
 
   const handleWheel = (e) => {
@@ -111,15 +119,9 @@ export default function GameBoardPage() {
     setIsDragging(false);
   };
   
-  // *** NEW CONFIRMATION HANDLER (You need to implement the actual server call) ***
-  const handleRollConfirm = (dice1, dice2) => {
-    // In a real app, you would send a message to the server here:
-    console.log(`Sending roll confirmation to server: [${dice1}, ${dice2}]`);
-    // Example: sendWebSocketMessage({ type: 'DICE_ROLLED', dice1, dice2, gameId });
-  };
-  
   const handlePopupClose = () => {
     setShowDicePopup(false);
+    sendReady(gameId);
   };
 
   return (
@@ -167,7 +169,6 @@ export default function GameBoardPage() {
         {showDicePopup && (
           <DiceRollPopup
             diceValues={diceValues}
-            onRollConfirm={handleRollConfirm}
             onClose={handlePopupClose}
           />
         )}
